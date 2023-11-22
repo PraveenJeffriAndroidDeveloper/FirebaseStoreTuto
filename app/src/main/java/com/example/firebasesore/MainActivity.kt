@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +25,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.btnUploadData).setOnClickListener {
-            savePerson(Person(findViewById<EditText>(R.id.etFirstName).text.toString() , findViewById<EditText>(R.id.etLastName).text.toString() , findViewById<EditText>(R.id.etAge).text.toString().toInt()))
+            val person = getOldPerson()
+            savePerson(person)
+            //savePerson(Person(findViewById<EditText>(R.id.etFirstName).text.toString() , findViewById<EditText>(R.id.etLastName).text.toString() , findViewById<EditText>(R.id.etAge).text.toString().toInt()))
         }
 
         subscribeToRealTimeDatabase()
@@ -32,6 +35,76 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnRetrieveData).setOnClickListener {
             retrivePerson()
         }
+
+        findViewById<Button>(R.id.btnUpdatePerson).setOnClickListener {
+            val person = getOldPerson()
+            val newPerson = getNewPerson()
+            updatePersson(person , newPerson)
+        }
+    }
+
+    private fun getNewPerson() : Map<String , Any>
+    {
+        val firstName = findViewById<EditText>(R.id.etNewFirstName).text.toString()
+        val secondName = findViewById<EditText>(R.id.etNewLastName).text.toString()
+        val age = findViewById<EditText>(R.id.etNewAge).text.toString()
+        var map = mutableMapOf<String , Any>()
+        if (firstName.isNotEmpty())
+        {
+            map["firstName"] = firstName
+        }
+        if (secondName.isNotEmpty())
+        {
+            map["secondName"] = secondName
+        }
+        if (age.isNotEmpty())
+        {
+            map["age"] = age.toInt()
+        }
+        return map
+    }
+
+    private fun updatePersson(person : Person , map: Map<String , Any>) = CoroutineScope(Dispatchers.IO).launch {
+        val personQuery = personCollectionRef.
+        whereEqualTo("firstName" , person.firstName)
+            .whereEqualTo("secondName" , person.secondName)
+            .whereEqualTo("age"  , person.age)
+            .get()
+            .await()
+
+        if (personQuery.documents.isNotEmpty())
+        {
+            for (document in personQuery)
+            {
+                try {
+                    personCollectionRef.document(document.id).set(
+                        map ,
+                        SetOptions.merge()
+                    ).await()
+                }
+                catch (e:Exception)
+                {
+                    withContext(Dispatchers.Main)
+                    {
+                        Toast.makeText(this@MainActivity , e.message , Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            }
+        }
+        else
+        {
+            withContext(Dispatchers.Main)
+            {
+                Toast.makeText(this@MainActivity , "No records found" , Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+    private fun getOldPerson() : Person
+    {
+        return Person(findViewById<EditText>(R.id.etFirstName).text.toString() , findViewById<EditText>(R.id.etLastName).text.toString() , findViewById<EditText>(R.id.etAge).text.toString().toInt())
     }
 
     private fun subscribeToRealTimeDatabase()
