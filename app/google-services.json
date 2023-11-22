@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1058375962893",
+    "project_id": "fir-sore-37381",
+    "storage_bucket": "fir-sore-37381.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1058375962893:android:a91ab8967f76b27e432044",
+        "android_client_info": {
+          "package_name": "com.example.firebasesore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZYVgXT8UA35QS1geDItXNI6ilOcQnZkY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
